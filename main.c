@@ -35,7 +35,7 @@ ssd1306_t ssd;
 bool led_verde_ligado = false;
 bool led_azul_ligado = false;
 
-double matrizNumeros[10][25] ={
+double matrizNumeros[11][25] ={
     // 0
     {0.0, 0.1, 0.1, 0.1, 0.0,
      0.0, 0.1, 0.0, 0.1, 0.0,
@@ -95,10 +95,17 @@ double matrizNumeros[10][25] ={
      0.0, 0.1, 0.0, 0.1, 0.0,
      0.0, 0.1, 0.1, 0.1, 0.0,
      0.0, 0.1, 0.0, 0.0, 0.0,
-     0.0, 0.1, 0.1, 0.1, 0.0}
+     0.0, 0.1, 0.1, 0.1, 0.0},
+     //vazio
+     {
+      0.0, 0.0, 0.0, 0.0, 0.0,
+      0.0, 0.0, 0.0, 0.0, 0.0,
+      0.0, 0.0, 0.0, 0.0, 0.0,
+      0.0, 0.0, 0.0, 0.0, 0.0,
+      0.0, 0.0, 0.0, 0.0, 0.0}
 };
 
-uint32_t matrix_rgb(double b, double r, double g)
+uint32_t matrix_rgb(double r, double g, double b)
 {
   unsigned char R, G, B;
   R = r * 255;
@@ -113,7 +120,7 @@ void desenho_pio(double *desenho, uint32_t valor_led, PIO pio, uint sm, double r
     for (int16_t i = 0; i < NUM_PIXELS; i++) {
         if (i%2==0)
         {
-            valor_led = matrix_rgb(desenho[24-i], g, b);
+            valor_led = matrix_rgb(r, g, desenho[24-i]);
             pio_sm_put_blocking(pio, sm, valor_led);
 
         }else{
@@ -124,7 +131,8 @@ void desenho_pio(double *desenho, uint32_t valor_led, PIO pio, uint sm, double r
 }
 static void gpio_irq_handler(uint gpio, uint32_t events)
 {
-  ssd1306_fill(&ssd, false); // Limpa o display
+  
+  //ssd1306_fill(&ssd, false); // Limpa o display
 
   // Obter o tempo atual para o debounce
   absolute_time_t current_time = get_absolute_time();
@@ -140,37 +148,35 @@ static void gpio_irq_handler(uint gpio, uint32_t events)
 
   if (gpio == PIN_BUTTON_A)
   {
-    printf("Interrupção ocorreu no pino %d, no evento %d\n", gpio, events);
     printf("Botão A pressionado\n");
 
     if (led_verde_ligado)
     {
       printf("O led verde foi desligado.\n");
-      ssd1306_draw_string(&ssd, "LED Verde: OFF", 0, 0);
+      ssd1306_draw_string(&ssd, "LED Verde OFF", 0, 0);
       led_verde_ligado = false;
     }
     else
     {
       printf("O led verde foi ligado.\n");
-      ssd1306_draw_string(&ssd, "LED Verde: ON", 0, 0);
+      ssd1306_draw_string(&ssd, "LED Verde ON ", 0, 0);
       led_verde_ligado = true;
     }
   }
   else if (gpio == PIN_BUTTON_B)
   {
-    printf("Interrupção ocorreu no pino %d, no evento %d\n", gpio, events);
     printf("Botão B pressionado\n");
 
     if (led_azul_ligado)
     {
       printf("O led azul foi desligado.\n");
-      ssd1306_draw_string(&ssd, "LED Azul: OFF", 0, 0);
+      ssd1306_draw_string(&ssd, "LED Azul  OFF", 0, 10);
       led_azul_ligado = false;
     }
     else
     {
       printf("O led azul foi ligado.\n");
-      ssd1306_draw_string(&ssd, "LED Azul: ON", 0, 0);
+      ssd1306_draw_string(&ssd, "LED Azul  ON ", 0, 10);
       led_azul_ligado = true;
     }
   }
@@ -191,9 +197,9 @@ int main()
   stdio_init_all();
 
   //configurações da PIO
-    uint offset = pio_add_program(pio, &pio_matrix_program);
-    uint sm = pio_claim_unused_sm(pio, true);
-    pio_matrix_program_init(pio, sm, offset, OUT_PIN);
+  uint offset = pio_add_program(pio, &pio_matrix_program);
+  uint sm = pio_claim_unused_sm(pio, true);
+  pio_matrix_program_init(pio, sm, offset, OUT_PIN);
   i2c_init(I2C_PORT, 400 * 1000);
   
   gpio_init(PIN_BUTTON_A);
@@ -223,29 +229,25 @@ int main()
   ssd1306_fill(&ssd, false);
   ssd1306_send_data(&ssd);
 
-  bool cor = true;
+  // Limpa a matriz de leds 
+  desenho_pio(matrizNumeros[10], valor_led, pio, sm, 0, 0, 0);
+
+
   while (true)
   {
-    cor = !cor;
-
-    // Atualiza o conteúdo do display com animações
-    //ssd1306_fill(&ssd, !cor); // Limpa o display
-    ssd1306_rect(&ssd, 0, 0, 122, 58, cor, !cor); // Desenha um retângulo
-    char c;
-    scanf("%c", &c);
-    char str[2] = {c, '\0'};
-    if(str[0] >= '0' && str[0] <= '9')
+    char str[2];
+    fgets(str, sizeof(str), stdin); // Lê uma string de até 99 caracteres + '\0'
+    char c = str[0];
+    if(c >= '0' && c <= '9')
     {
       desenho_pio(matrizNumeros[c - '0'], valor_led, pio, sm, r, g, b);
     }
-    ssd1306_draw_string(&ssd, str, 60, 25); // Desenha uma string
-    ssd1306_send_data(&ssd); // Atualiza o display
-
-    if(gpio_get(PIN_BUTTON_A) == 0)
+    else
     {
-      reset_usb_boot(0,0);
+      desenho_pio(matrizNumeros[10], valor_led, pio, sm, 0, 0, 0);
     }
-    
+    ssd1306_draw_string(&ssd, &c, 60, 25); // Desenha uma string
+    ssd1306_send_data(&ssd); // Atualiza o display
     sleep_ms(500);
   }
 }
