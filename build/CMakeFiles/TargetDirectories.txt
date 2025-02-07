@@ -1,4 +1,5 @@
 F:/Files/Cursos/Embarcatech/EmbarcaTech-TarefaU4C6/build/CMakeFiles/main.dir
+F:/Files/Cursos/Embarcatech/EmbarcaTech-TarefaU4C6/build/CMakeFiles/main_pio_matrix_pio_h.dir
 F:/Files/Cursos/Embarcatech/EmbarcaTech-TarefaU4C6/build/CMakeFiles/edit_cache.dir
 F:/Files/Cursos/Embarcatech/EmbarcaTech-TarefaU4C6/build/CMakeFiles/rebuild_cache.dir
 F:/Files/Cursos/Embarcatech/EmbarcaTech-TarefaU4C6/build/pico-sdk/CMakeFiles/edit_cache.dir
