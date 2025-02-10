@@ -15,7 +15,6 @@
 #define endereco 0x3C
 
 #define NUM_PIXELS 25
-#define UART_ID uart0    // Seleciona a UART0
 #define BAUD_RATE 115200 // Define a taxa de transmissão
 
 #define PIN_BUTTON_A 5
@@ -149,8 +148,6 @@ static void gpio_irq_handler(uint gpio, uint32_t events)
   // Verifica qual botão foi pressionado e alterna o estado do LED correspondente
   if (gpio == PIN_BUTTON_A)
   {
-    printf("Botão A pressionado\n");
-
     if (led_verde_ligado)
     {
       printf("O led verde foi desligado.\n");
@@ -174,7 +171,7 @@ static void gpio_irq_handler(uint gpio, uint32_t events)
     }
     else
     {
-      printf("O led azul foi desligado.\n");
+      printf("O led azul foi ligado.\n");
       ssd1306_draw_string(&ssd, "LED Azul  ON ", 0, 10);
       led_azul_ligado = true;
     }

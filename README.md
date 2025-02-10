@@ -28,3 +28,4 @@ A função **main** inicializa a comunicação serial, os pinos dos LEDs e botõ
 Para evitar múltiplas leituras do botão devido ao efeito bouncing, foi implementada uma rotina de debounce. Após detectar um clique no botão, o programa espera 300 ms antes de processar a próxima interrupção.
 
 ### Link para o vídeo de explicação
+https://youtu.be/D_UUy5RDdjI
